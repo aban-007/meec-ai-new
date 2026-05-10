@@ -1,33 +1,42 @@
-function sendMessage() {
-  const input = document.getElementById("user-input");
-  const chatBox = document.getElementById("chat-box");
+const API_KEY = prompt("Masukkan OpenRouter API Key:");
 
-  const userText = input.value;
+async function kirimPesan() {
+    const input = document.getElementById("input");
+    const chat = document.getElementById("chat");
 
-  if (userText === "") return;
+    const pesan = input.value;
 
-  chatBox.innerHTML += `
-    <div class="message user">
-      <b>Kamu:</b> ${userText}
-    </div>
-  `;
+    if (!pesan) return;
 
-  let aiReply = "Maaf, saya masih AI sederhana.";
+    chat.innerHTML += `<p><b>Kamu:</b> ${pesan}</p>`;
 
-  if (userText.toLowerCase().includes("halo")) {
-    aiReply = "Halo juga!";
-  }
+    input.value = "";
 
-  if (userText.toLowerCase().includes("nama")) {
-    aiReply = "Nama saya MEEC AI.";
-  }
+    try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "openai/gpt-3.5-turbo",
+                messages: [
+                    {
+                        role: "user",
+                        content: pesan
+                    }
+                ]
+            })
+        });
 
-  chatBox.innerHTML += `
-    <div class="message ai">
-      <b>AI:</b> ${aiReply}
-    </div>
-  `;
+        const data = await response.json();
 
-  input.value = "";
-  chatBox.scrollTop = chatBox.scrollHeight;
+        const jawaban = data.choices[0].message.content;
+
+        chat.innerHTML += `<p><b>AI:</b> ${jawaban}</p>`;
+
+    } catch (error) {
+        chat.innerHTML += `<p><b>AI:</b> Error koneksi API.</p>`;
+    }
 }
