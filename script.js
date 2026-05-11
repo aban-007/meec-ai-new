@@ -1,29 +1,50 @@
-function kirimPesan() {
+const apiKey = "PASTE_API_KEY_OPENAI_DI_SINI";
 
-  const input = document.getElementById("input");
-  const chat = document.getElementById("chat");
+async function sendMessage() {
+    const input = document.getElementById("userInput");
+    const chatBox = document.getElementById("chatBox");
 
-  const pesan = input.value;
+    const userMessage = input.value;
 
-  if (pesan.trim() === "") {
-    return;
-  }
+    if (!userMessage) return;
 
-  chat.innerHTML += `
-    <div class="user">
-      <b>Anda:</b> ${pesan}
-    </div>
-  `;
+    chatBox.innerHTML += `<p><b>Kamu:</b> ${userMessage}</p>`;
 
-  setTimeout(() => {
+    input.value = "";
 
-    chat.innerHTML += `
-      <div class="ai">
-        <b>MEEC AI:</b> Halo, saya sedang aktif. Pesan Anda: ${pesan}
-      </div>
-    `;
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    {
+                        role: "user",
+                        content: userMessage
+                    }
+                ]
+            })
+        });
 
-  }, 500);
+        const data = await response.json();
 
-  input.value = "";
+        console.log(data);
+
+        if (data.error) {
+            chatBox.innerHTML += `<p style="color:red;"><b>Error:</b> ${data.error.message}</p>`;
+            return;
+        }
+
+        const botReply = data.choices[0].message.content;
+
+        chatBox.innerHTML += `<p><b>MEEC AI:</b> ${botReply}</p>`;
+
+    } catch (error) {
+        chatBox.innerHTML += `<p style="color:red;">Gagal terhubung API</p>`;
+        console.error(error);
+    }
 }
