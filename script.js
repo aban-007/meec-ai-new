@@ -1,40 +1,42 @@
-function sendMessage() {
-  const input = document.getElementById("user-input");
-  const chatBox = document.getElementById("chat-box");
+const API_KEY = "";
 
-  const userText = input.value;
+async function kirimPesan() {
+    const input = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
 
-  if (userText === "") return;
+    const pesan = input.value;
 
-  chatBox.innerHTML += `
-    <div class="message user">
-      <b>Kamu:</b> ${userText}
-    </div>
-  `;
+    if (pesan.trim() === "") return;
 
-  let aiReply = "Maaf, saya masih AI sederhana.";
+    chatBox.innerHTML += `<p><b>Kamu:</b> ${pesan}</p>`;
 
-  if (userText.toLowerCase().includes("halo")) {
-    aiReply = "Halo juga!";
-  }
+    input.value = "";
 
-  if (userText.toLowerCase().includes("nama")) {
-    aiReply = "Nama saya MEEC AI.";
-  }
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    {
+                        role: "user",
+                        content: pesan
+                    }
+                ]
+            })
+        });
 
-  chatBox.innerHTML += `
-    <div class="message ai">
-      <b>AI:</b> ${aiReply}
-    </div>
-  `;
+        const data = await response.json();
 
-  input.value = "";
-  chatBox.scrollTop = chatBox.scrollHeight;
+        const jawaban = data.choices[0].message.content;
+
+        chatBox.innerHTML += `<p><b>AI:</b> ${jawaban}</p>`;
+
+    } catch (error) {
+        chatBox.innerHTML += `<p><b>AI:</b> Error koneksi.</p>`;
+    }
 }
-
-// Tambahan kode agar bisa kirim pesan dengan Enter
-document.getElementById("user-input").addEventListener("keypress", function (e) {
-  if (e.key === "Enter") {
-    sendMessage();
-  }
-});
