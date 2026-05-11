@@ -1,42 +1,33 @@
-const API_KEY = "";
+function sendMessage() {
+  const input = document.getElementById("user-input");
+  const chatBox = document.getElementById("chat-box");
 
-async function kirimPesan() {
-    const input = document.getElementById("user-input");
-    const chatBox = document.getElementById("chat-box");
+  const userText = input.value;
 
-    const pesan = input.value;
+  if (userText === "") return;
 
-    if (pesan.trim() === "") return;
+  chatBox.innerHTML += `
+    <div class="message user">
+      <b>Kamu:</b> ${userText}
+    </div>
+  `;
 
-    chatBox.innerHTML += `<p><b>Kamu:</b> ${pesan}</p>`;
+  let aiReply = "Maaf, saya masih AI sederhana.";
 
-    input.value = "";
+  if (userText.toLowerCase().includes("halo")) {
+    aiReply = "Halo juga!";
+  }
 
-    try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: [
-                    {
-                        role: "user",
-                        content: pesan
-                    }
-                ]
-            })
-        });
+  if (userText.toLowerCase().includes("nama")) {
+    aiReply = "Nama saya MEEC AI.";
+  }
 
-        const data = await response.json();
+  chatBox.innerHTML += `
+    <div class="message ai">
+      <b>AI:</b> ${aiReply}
+    </div>
+  `;
 
-        const jawaban = data.choices[0].message.content;
-
-        chatBox.innerHTML += `<p><b>AI:</b> ${jawaban}</p>`;
-
-    } catch (error) {
-        chatBox.innerHTML += `<p><b>AI:</b> Error koneksi.</p>`;
-    }
+  input.value = "";
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
