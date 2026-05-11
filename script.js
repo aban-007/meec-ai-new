@@ -31,3 +31,10 @@ function sendMessage() {
   input.value = "";
   chatBox.scrollTop = chatBox.scrollHeight;
 }
+
+// Tambahan kode agar bisa kirim pesan dengan Enter
+document.getElementById("user-input").addEventListener("keypress", function (e) {
+  if (e.key === "Enter") {
+    sendMessage();
+  }
+});
