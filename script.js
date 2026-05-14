@@ -1,46 +1,42 @@
-async function sendMessage() {
+async function kirimPesan() {
+    const input = document.getElementById("input");
+    const chat = document.getElementById("chat");
 
-  const input = document.getElementById("user-input");
-  const chatBox = document.getElementById("chat-box");
+    const pesan = input.value;
 
-  const userText = input.value;
+    if (pesan.trim() === "") return;
 
-  if (userText === "") return;
+    chat.innerHTML += `<p><b>Kamu:</b> ${pesan}</p>`;
 
-  chatBox.innerHTML += `
-    <div class="message user">
-      <b>Kamu:</b> ${userText}
-    </div>
-  `;
+    input.value = "";
+  
+  const apiKey = "sk-xxxxxxxxxxxxxxxx";
 
-  input.value = "";
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    {
+                        role: "user",
+                        content: pesan
+                    }
+                ]
+            })
+        });
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer API_KEY_KAMU",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "openai/gpt-3.5-turbo",
-      messages: [
-        {
-          role: "user",
-          content: userText
-        }
-      ]
-    })
-  });
+        const data = await response.json();
 
-  const data = await response.json();
+        const jawaban = data.choices[0].message.content;
 
-  const aiReply = data.choices[0].message.content;
+        chat.innerHTML += `<p><b>AI:</b> ${jawaban}</p>`;
 
-  chatBox.innerHTML += `
-    <div class="message ai">
-      <b>AI:</b> ${aiReply}
-    </div>
-  `;
-
-  chatBox.scrollTop = chatBox.scrollHeight;
+    } catch (error) {
+        chat.innerHTML += `<p><b>AI:</b> Error koneksi API.</p>`;
+    }
 }
