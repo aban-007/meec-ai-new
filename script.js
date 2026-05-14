@@ -1,74 +1,37 @@
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+
 async function sendMessage() {
+    const message = userInput.value;
 
-  const input = document.getElementById("user-input");
-  const chatBox = document.getElementById("chat-box");
+    if (!message) return;
 
-  const userText = input.value;
+    chatBox.innerHTML += `<p><b>Kamu:</b> ${message}</p>`;
 
-  if (userText === "") return;
+    userInput.value = "";
 
-  // Show user message
-  chatBox.innerHTML += `
-    <div class="message user">
-      <b>Kamu:</b> ${userText}
-    </div>
-  `;
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                message: message
+            }),
+        });
 
-  input.value = "";
+        const data = await response.json();
 
-  // Loading message
-  chatBox.innerHTML += `
-    <div class="message ai" id="loading">
-      <b>AI:</b> Sedang berpikir...
-    </div>
-  `;
+        if (data.reply) {
+            chatBox.innerHTML += `<p><b>MEEC AI:</b> ${data.reply}</p>`;
+        } else {
+            chatBox.innerHTML += `<p><b>MEEC AI:</b> Error</p>`;
+        }
 
-  chatBox.scrollTop = chatBox.scrollHeight;
-
-  try {
-
-    const response = await fetch("/api/chat", {
-
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-        message: userText
-      })
-
-    });
-
-    const data = await response.json();
-
-    // Remove loading
-    document.getElementById("loading").remove();
-
-    const aiReply = data.choices[0].message.content;
-
-    // Show AI message
-    chatBox.innerHTML += `
-      <div class="message ai">
-        <b>AI:</b> ${aiReply}
-      </div>
-    `;
+    } catch (error) {
+        chatBox.innerHTML += `<p><b>MEEC AI:</b> Failed connect</p>`;
+    }
 
     chatBox.scrollTop = chatBox.scrollHeight;
-
-  } catch (error) {
-
-    document.getElementById("loading").remove();
-
-    chatBox.innerHTML += `
-      <div class="message ai">
-        <b>AI:</b> Error koneksi API.
-      </div>
-    `;
-
-    console.log(error);
-
-  }
-
 }
