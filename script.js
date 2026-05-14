@@ -1,37 +1,46 @@
-const chatBox = document.getElementById("chat-box");
-const userInput = document.getElementById("user-input");
+async function kirimPesan() {
+  const input = document.getElementById("input");
+  const chat = document.getElementById("chat");
 
-async function sendMessage() {
-    const message = userInput.value;
+  const pesan = input.value;
 
-    if (!message) return;
+  chat.innerHTML += `<p><b>Kamu:</b> ${pesan}</p>`;
 
-    chatBox.innerHTML += `<p><b>Kamu:</b> ${message}</p>`;
+  input.value = "";
 
-    userInput.value = "";
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer MASUKKAN_API_KEY_DISINI"
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "user",
+            content: pesan
+          }
+        ]
+      })
+    });
 
-    try {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                message: message
-            }),
-        });
+    const data = await response.json();
 
-        const data = await response.json();
+    console.log(data);
 
-        if (data.reply) {
-            chatBox.innerHTML += `<p><b>MEEC AI:</b> ${data.reply}</p>`;
-        } else {
-            chatBox.innerHTML += `<p><b>MEEC AI:</b> Error</p>`;
-        }
+    if (data.choices && data.choices.length > 0) {
+      const jawaban = data.choices[0].message.content;
 
-    } catch (error) {
-        chatBox.innerHTML += `<p><b>MEEC AI:</b> Failed connect</p>`;
+      chat.innerHTML += `<p><b>MEEC AI:</b> ${jawaban}</p>`;
+    } else {
+      chat.innerHTML += `<p><b>MEEC AI:</b> Error API</p>`;
     }
 
-    chatBox.scrollTop = chatBox.scrollHeight;
+  } catch (error) {
+    console.log(error);
+
+    chat.innerHTML += `<p><b>MEEC AI:</b> Gagal konek</p>`;
+  }
 }
