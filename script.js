@@ -7,17 +7,16 @@ async function sendMessage() {
 
   if (userText === "") return;
 
-  // Tampilkan pesan user
+  // Show user message
   chatBox.innerHTML += `
     <div class="message user">
       <b>Kamu:</b> ${userText}
     </div>
   `;
 
-  // Kosongkan input
   input.value = "";
 
-  // Tampilkan loading
+  // Loading message
   chatBox.innerHTML += `
     <div class="message ai" id="loading">
       <b>AI:</b> Sedang berpikir...
@@ -28,45 +27,28 @@ async function sendMessage() {
 
   try {
 
-    // GANTI API KEY DI BAWAH
-    const apiKey = "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";
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("/api/chat", {
 
       method: "POST",
 
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        "Content-Type": "application/json"
       },
 
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-
-        messages: [
-          {
-            role: "system",
-            content: "Kamu adalah MEEC AI, asisten pintar."
-          },
-          {
-            role: "user",
-            content: userText
-          }
-        ]
-
+        message: userText
       })
 
     });
 
     const data = await response.json();
 
-    // Hapus loading
+    // Remove loading
     document.getElementById("loading").remove();
 
-    // Ambil jawaban AI
     const aiReply = data.choices[0].message.content;
 
-    // Tampilkan jawaban
+    // Show AI message
     chatBox.innerHTML += `
       <div class="message ai">
         <b>AI:</b> ${aiReply}
@@ -86,5 +68,7 @@ async function sendMessage() {
     `;
 
     console.log(error);
+
   }
+
 }
