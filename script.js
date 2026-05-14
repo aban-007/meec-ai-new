@@ -1,4 +1,5 @@
-function sendMessage() {
+async function sendMessage() {
+
   const input = document.getElementById("user-input");
   const chatBox = document.getElementById("chat-box");
 
@@ -12,15 +13,28 @@ function sendMessage() {
     </div>
   `;
 
-  let aiReply = "Maaf, saya masih AI sederhana.";
+  input.value = "";
 
-  if (userText.toLowerCase().includes("halo")) {
-    aiReply = "Halo juga!";
-  }
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer API_KEY_KAMU",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-3.5-turbo",
+      messages: [
+        {
+          role: "user",
+          content: userText
+        }
+      ]
+    })
+  });
 
-  if (userText.toLowerCase().includes("nama")) {
-    aiReply = "Nama saya MEEC AI.";
-  }
+  const data = await response.json();
+
+  const aiReply = data.choices[0].message.content;
 
   chatBox.innerHTML += `
     <div class="message ai">
@@ -28,6 +42,5 @@ function sendMessage() {
     </div>
   `;
 
-  input.value = "";
   chatBox.scrollTop = chatBox.scrollHeight;
 }
