@@ -1,42 +1,90 @@
-async function kirimPesan() {
-    const input = document.getElementById("input");
-    const chat = document.getElementById("chat");
+async function sendMessage() {
 
-    const pesan = input.value;
+  const input = document.getElementById("user-input");
+  const chatBox = document.getElementById("chat-box");
 
-    if (pesan.trim() === "") return;
+  const userText = input.value;
 
-    chat.innerHTML += `<p><b>Kamu:</b> ${pesan}</p>`;
+  if (userText === "") return;
 
-    input.value = "";
-  
-  const apiKey = "sk-xxxxxxxxxxxxxxxx";
+  // Tampilkan pesan user
+  chatBox.innerHTML += `
+    <div class="message user">
+      <b>Kamu:</b> ${userText}
+    </div>
+  `;
 
-    try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: [
-                    {
-                        role: "user",
-                        content: pesan
-                    }
-                ]
-            })
-        });
+  // Kosongkan input
+  input.value = "";
 
-        const data = await response.json();
+  // Tampilkan loading
+  chatBox.innerHTML += `
+    <div class="message ai" id="loading">
+      <b>AI:</b> Sedang berpikir...
+    </div>
+  `;
 
-        const jawaban = data.choices[0].message.content;
+  chatBox.scrollTop = chatBox.scrollHeight;
 
-        chat.innerHTML += `<p><b>AI:</b> ${jawaban}</p>`;
+  try {
 
-    } catch (error) {
-        chat.innerHTML += `<p><b>AI:</b> Error koneksi API.</p>`;
-    }
+    // GANTI API KEY DI BAWAH
+    const apiKey = "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";
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+
+        messages: [
+          {
+            role: "system",
+            content: "Kamu adalah MEEC AI, asisten pintar."
+          },
+          {
+            role: "user",
+            content: userText
+          }
+        ]
+
+      })
+
+    });
+
+    const data = await response.json();
+
+    // Hapus loading
+    document.getElementById("loading").remove();
+
+    // Ambil jawaban AI
+    const aiReply = data.choices[0].message.content;
+
+    // Tampilkan jawaban
+    chatBox.innerHTML += `
+      <div class="message ai">
+        <b>AI:</b> ${aiReply}
+      </div>
+    `;
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+  } catch (error) {
+
+    document.getElementById("loading").remove();
+
+    chatBox.innerHTML += `
+      <div class="message ai">
+        <b>AI:</b> Error koneksi API.
+      </div>
+    `;
+
+    console.log(error);
+  }
 }
